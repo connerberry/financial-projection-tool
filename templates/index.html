@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Financial Projection Tool</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+    <script src="{{ url_for('static', filename='script.js') }}" defer></script>
+  </head>
+  <body>
+    <h1>Financial Projection Tool</h1>
+
+    {% if img_data %}
+    <h2>Projection Results</h2>
+    <img
+      src="data:image/png;base64,{{ img_data }}"
+      alt="Financial Projection Plot"
+    /><br /><br />
+    {% endif %}
+
+    <form method="POST">
+      <h2>Basic Parameters</h2>
+      <div class="form-row">
+        <div>
+          <label for="principal">Starting Principal:</label>
+          <input
+            type="number"
+            name="principal"
+            step="0.01"
+            value="0"
+            required
+          />
+        </div>
+        <div>
+          <label for="yearly_wage_growth_rate">Yearly Wage Growth:</label>
+          <input
+            type="number"
+            name="yearly_wage_growth_rate"
+            step="0.01"
+            value="1.07"
+            required
+          />
+        </div>
+        <div>
+          <label for="yearly_inflation_rate">Yearly Inflation Rate:</label>
+          <input
+            type="number"
+            name="yearly_inflation_rate"
+            value="1.03"
+            step="0.01"
+            required
+          />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div>
+          <label for="market_rate">Market Rate (including inflation):</label>
+          <input
+            type="number"
+            name="market_rate"
+            value="1.03"
+            step="0.01"
+            required
+          />
+        </div>
+        <div>
+          <label for="market_rate_in_retirement">Market Rate Retirement:</label>
+          <input
+            type="number"
+            name="market_rate_in_retirement"
+            value="1.05"
+            step="0.01"
+            required
+          />
+        </div>
+        <div>
+          <label for="starting_salary">Starting Salary:</label>
+          <input
+            type="number"
+            name="starting_salary"
+            step="0.01"
+            value="77000"
+            required
+          />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div>
+          <label for="starting_expenses">Starting Expenses:</label>
+          <input
+            type="number"
+            name="starting_expenses"
+            value="37000"
+            step="0.01"
+            required
+          />
+        </div>
+        <div>
+          <label for="expenses_growth_rate">Expense Growth Rate:</label>
+          <input
+            type="number"
+            name="expenses_growth_rate"
+            value="1.01"
+            step="0.01"
+            required
+          />
+        </div>
+        <div>
+          <label for="starting_year">Starting Year:</label>
+          <input type="number" name="starting_year" value="2025" required />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div>
+          <label for="starting_age">Starting Age:</label>
+          <input type="number" name="starting_age" value="23" required />
+        </div>
+        <div>
+          <label for="num_years">Number Years:</label>
+          <input type="number" name="num_years" value="20" required />
+        </div>
+      </div>
+
+      <!--Button to toggle advanced options-->
+      <button
+        type="button"
+        id="toggle-button"
+        onclick="toggleAdvancedOptions()"
+      >
+        Show Advanced Options
+      </button>
+
+      <div id="advanced-options">
+        <h2>Advanced Options</h2>
+        <div class="form-row">
+          <div>
+            <label for="num_children">Number Children:</label>
+            <input type="number" name="num_children" value="0" required />
+          </div>
+          <div>
+            <label for="age_first_child">Age First Child:</label>
+            <input type="number" name="age_first_child" value="30" required />
+          </div>
+          <div>
+            <label for="yrs_between_kids">Years Between Children:</label>
+            <input type="number" name="yrs_between_kids" value="2" required />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div>
+            <label for="cost_per_child_per_year"
+              >Cost Per Child Per Year:</label
+            >
+            <input
+              type="number"
+              name="cost_per_child_per_year"
+              value="8500"
+              step="0.01"
+              required
+            />
+          </div>
+          <div>
+            <label for="employer_401k_match">Employer 401k Match Rate:</label>
+            <input
+              type="number"
+              name="employer_401k_match"
+              step="0.01"
+              value="0.06"
+              required
+            />
+          </div>
+          <div>
+            <label for="lifespan">Lifespan:</label>
+            <input type="number" name="lifespan" value="90" required />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div>
+            <label for="expenses_in_retirement"
+              >Ratio of Expenses Retirement:</label
+            >
+            <input
+              type="number"
+              name="expenses_in_retirement"
+              value="0.8"
+              step="0.01"
+              required
+            />
+          </div>
+          <div>
+            <label for="expense_growth_retirement"
+              >Expense Growth Rate Retirement:</label
+            >
+            <input
+              type="number"
+              name="expense_growth_retirement"
+              value="1.02"
+              step="0.01"
+              required
+            />
+          </div>
+        </div>
+      </div>
+      <input type="submit" value="Calculate" />
+    </form>
+
+    {% if img_data %}
+    <h3>Yearly Breakdown:</h3>
+    <table>
+      <tr>
+        <th>Year</th>
+        <th>Salary</th>
+        <th>Expenses</th>
+        <th>Contribution</th>
+        <th>Portfolio</th>
+        <th>Portfolio (Today's Dollars)</th>
+      </tr>
+      {% for year, salary, expenses, contribution, portfolio, portfolio_today in
+      zip(data['Year'], data['Salary'], data['Expenses'], data['Contribution'],
+      data['Portfolio'], data["Portfolio in Today's Dollars"]) %}
+      <tr>
+        <td>{{ year }}</td>
+        <td>{{ salary }}</td>
+        <td>{{ expenses }}</td>
+        <td>{{ contribution }}</td>
+        <td>{{ portfolio }}</td>
+        <td>{{ portfolio_today }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+    {% endif %}
+  </body>
+</html>
